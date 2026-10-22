@@ -1,4 +1,6 @@
 ---
+import { url } from "../lib/url";
+
 interface Props {
   title: string;
   description: string;
@@ -15,7 +17,7 @@ const { title, description } = Astro.props;
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={url("favicon.svg")} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -26,8 +28,8 @@ const { title, description } = Astro.props;
   <body>
     <header class="site-header">
       <div class="wrap">
-        <a href="/" class="brand">UK Jobs by Gender</a>
-        <nav><a href="/#chart">Chart</a><a href="/#sources">Sources</a></nav>
+        <a href={url()} class="brand">UK Jobs by Gender</a>
+        <nav><a href={url("#chart")}>Chart</a><a href={url("#sources")}>Sources</a></nav>
       </div>
     </header>
     <main class="wrap">

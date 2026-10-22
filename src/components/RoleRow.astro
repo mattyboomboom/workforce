@@ -1,6 +1,7 @@
 ---
 import type { Occupation } from "../lib/stats";
 import { fmtCount, fmtShare } from "../lib/stats";
+import { url } from "../lib/url";
 
 interface Props {
   o: Occupation;
@@ -8,7 +9,7 @@ interface Props {
 const { o } = Astro.props;
 ---
 
-<a class="row" href={`/roles/${o.slug}`}>
+<a class="row" href={url(`roles/${o.slug}`)}>
   <span class="name">
     <b>{o.name}</b>
     <small class="mono">{fmtCount(o.total)} in work · {fmtShare(o.workforcePct)} of UK workforce</small>

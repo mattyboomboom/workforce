@@ -22,3 +22,11 @@ npm run build    # type-checks, then outputs static files to dist/
 ## Deploy on Vercel
 
 Import the repo in Vercel. It detects Astro automatically: build command `npm run build`, output directory `dist`. No adapter or environment variables are needed.
+
+## Deploy on GitHub Pages
+
+1. Push this folder to a GitHub repo, with `main` as the default branch.
+2. In the repo, go to **Settings → Pages** and set **Source** to **GitHub Actions**.
+3. Push to `main`, or run the workflow by hand from the **Actions** tab. The site publishes to `https://<user>.github.io/<repo>/`.
+
+The workflow in `.github/workflows/deploy.yml` sets `BASE_PATH` to the repo name so links work under that subfolder. If you add a custom domain, change `BASE_PATH` to `/` in the workflow.

@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from "astro";
 import Base from "../../layouts/Base.astro";
 import { sources } from "../../data/occupations";
+import { url } from "../../lib/url";
 import {
   occupations,
   summary,
@@ -43,7 +44,7 @@ const usedSources = new Set(["wf", ...(o.notes ?? []).map((n) => n.source)]);
   title={`${o.name} · UK Jobs by Gender`}
   description={`${o.name}: ${o.femalePct.toFixed(0)}% female, ${o.malePct.toFixed(0)}% male, about ${fmtCount(o.total)} people in work in the UK.`}
 >
-  <a class="back" href="/#chart">‹ All jobs</a>
+  <a class="back" href={url("#chart")}>‹ All jobs</a>
 
   <header class="role-head">
     <p class="eyebrow">{positionLine(o, occupations.length)}</p>
@@ -112,7 +113,7 @@ const usedSources = new Set(["wf", ...(o.notes ?? []).map((n) => n.source)]);
   <nav class="pager" aria-label="Neighbouring jobs">
     {
       prev ? (
-        <a href={`/roles/${prev.slug}`} class="prev">
+        <a href={url(`roles/${prev.slug}`)} class="prev">
           <span>More male</span>
           <b>‹ {prev.name}</b>
           <small class="mono">{prev.femalePct.toFixed(1)}% F</small>
@@ -121,7 +122,7 @@ const usedSources = new Set(["wf", ...(o.notes ?? []).map((n) => n.source)]);
     }
     {
       next ? (
-        <a href={`/roles/${next.slug}`} class="next">
+        <a href={url(`roles/${next.slug}`)} class="next">
           <span>More female</span>
           <b>{next.name} ›</b>
           <small class="mono">{next.femalePct.toFixed(1)}% F</small>
