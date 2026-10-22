@@ -10,10 +10,13 @@ const coverage = Math.round(summary.coveragePct);
 <Base
   title="UK Jobs by Gender"
   description={`${summary.count} UK occupations ranked from most male to most female, covering ${coverage}% of everyone in work.`}
+  lineup="large"
 >
-  <section class="cover">
+  <div slot="hero" class="wrap hero">
     <p class="eyebrow">UK workforce · 2024</p>
     <h1>Who does which job in the UK?</h1>
+  </div>
+  <section class="cover">
     <p class="intro">
       Most UK jobs are still split along gender lines. Almost everyone fitting boilers, driving lorries or
       repairing cars is a man. Almost everyone looking after toddlers, assisting in classrooms or running a
@@ -65,7 +68,8 @@ const coverage = Math.round(summary.coveragePct);
 
 <style>
   .cover { padding-bottom: 8px; }
-  h1 { font-size: clamp(36px, 7vw, 64px); margin: 0 0 18px; font-weight: 700; max-width: 16ch; }
+  .hero { padding-top: 40px; }
+  h1 { font-size: clamp(36px, 6.4vw, 66px); margin: 0; font-weight: 700; max-width: 18ch; }
   .intro { font-size: 19px; max-width: 64ch; margin: 0 0 12px; }
   .intro + .intro { color: var(--muted); font-size: 16px; font-style: italic; }
   .facts {
