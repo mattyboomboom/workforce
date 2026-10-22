@@ -1,28 +1,42 @@
 ---
 import { sources, moreResources } from "../data/occupations";
+
+const used = Object.values(sources);
 ---
 
 <section id="sources" class="sources">
   <p class="eyebrow">Sources & resources</p>
   <h2>Where the numbers come from</h2>
-  <ul>
+
+  <h3>Used on this site</h3>
+  <ul class="grid two">
     {
-      Object.values(sources).map((s) => (
+      used.map((s) => (
         <li>
-          <a href={s.url} target="_blank" rel="noopener">{s.title}</a>
-          <span class="pub">{s.publisher}</span>
-          <span class="sum">{s.summary}</span>
+          <a class="card" href={s.url} target="_blank" rel="noopener">
+            <span class="tag">{s.tag}</span>
+            <span class="title">{s.title}</span>
+            <span class="pub">{s.publisher}</span>
+            <span class="sum">{s.summary}</span>
+            <span class="go" aria-hidden="true">↗</span>
+          </a>
         </li>
       ))
     }
   </ul>
+
   <h3>Go further</h3>
-  <ul>
+  <ul class="grid three">
     {
       moreResources.map((r) => (
         <li>
-          <a href={r.url} target="_blank" rel="noopener">{r.title}</a>
-          <span class="sum">{r.summary}</span>
+          <a class="card" href={r.url} target="_blank" rel="noopener">
+            <span class="tag">{r.tag}</span>
+            <span class="title">{r.title}</span>
+            <span class="pub">{r.publisher}</span>
+            <span class="sum">{r.summary}</span>
+            <span class="go" aria-hidden="true">↗</span>
+          </a>
         </li>
       ))
     }
@@ -31,11 +45,51 @@ import { sources, moreResources } from "../data/occupations";
 
 <style>
   .sources { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--line); }
-  h2 { font-size: 26px; margin: 0 0 18px; }
-  h3 { font-size: 16px; margin: 28px 0 10px; letter-spacing: 0; }
-  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-  li { display: grid; gap: 2px; max-width: 70ch; }
-  a { font-weight: 600; text-underline-offset: 3px; }
-  .pub { font-size: 13px; color: var(--muted); }
-  .sum { font-size: 14px; }
+  h2 { font-size: 26px; margin: 0 0 22px; }
+  h3 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin: 26px 0 12px;
+  }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid li { display: flex; min-width: 0; }
+  .card {
+    position: relative;
+    display: flex; flex-direction: column; gap: 6px;
+    width: 100%;
+    padding: 16px 40px 18px 18px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { border-color: var(--muted); }
+  .card:focus-visible { outline: 2px solid var(--male); outline-offset: 2px; }
+  .tag {
+    align-self: flex-start;
+    font-family: var(--font-display);
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--male);
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 1px 9px;
+  }
+  .title {
+    font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .pub { font-size: 14px; color: var(--muted); line-height: 1.35; }
+  .sum { font-size: 15px; line-height: 1.45; }
+  .go { position: absolute; top: 14px; right: 16px; color: var(--muted); font-size: 16px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .card:hover { transform: translateY(-1px); }
+  }
+  @media (max-width: 860px) {
+    .grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 600px) {
+    .grid.two, .grid.three { grid-template-columns: 1fr; }
+  }
 </style>

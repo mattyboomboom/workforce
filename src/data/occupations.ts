@@ -23,7 +23,7 @@ export type SourceId = "wf" | "ciphr" | "bcs" | "nmc";
 
 export const sources: Record<
   SourceId,
-  { title: string; publisher: string; url: string; summary: string }
+  { title: string; publisher: string; url: string; summary: string; tag: string }
 > = {
   wf: {
     title: "Working Futures 2024: occupations by gender",
@@ -31,6 +31,7 @@ export const sources: Record<
     url: "https://careersmart.org.uk/node/497",
     summary:
       "Female and male workforce counts for 318 UK occupations in 2024. Every headcount and percentage on this site comes from this table.",
+    tag: "Main dataset",
   },
   ciphr: {
     title: "The UK's most popular jobs in 2026",
@@ -38,37 +39,71 @@ export const sources: Record<
     url: "https://www.fenews.co.uk/fe-voices/study-reveals-the-uks-most-popular-jobs-in-2026/",
     summary:
       "The ten occupations with the most full-time employees in the year to March 2026.",
+    tag: "Analysis",
   },
   bcs: {
-    title: "BCS Women in Tech report 2026: gender and IT employment",
+    title: "BCS Women in Tech report 2026",
     publisher: "BCS, The Chartered Institute for IT, using the ONS Labour Force Survey",
     url: "https://www.bcs.org/policy-and-influence/equity-diversity-and-inclusion/bcs-women-in-tech-report-2026/gender-and-it-employment/",
     summary: "Women's share of UK IT specialist jobs, 2021 to 2025.",
+    tag: "Report",
   },
   nmc: {
     title: "NMC register mid-year update, September 2024",
     publisher: "Nursing and Midwifery Council",
     url: "https://www.nmc.org.uk/globalassets/sitedocuments/data-reports/september-2024/easy-read-nmc-register-uk-mid-year-update-2024.pdf",
     summary: "Number of nurses, midwives and nursing associates on the UK register.",
+    tag: "Register",
   },
 };
 
-export const moreResources = [
+export const moreResources: { title: string; publisher: string; url: string; summary: string; tag: string }[] = [
   {
-    title: "ONS Nomis: employment by occupation and sex",
+    title: "Employment by occupation and sex",
+    publisher: "ONS Nomis",
     url: "https://www.nomisweb.co.uk/",
     summary:
-      "Official quarterly Annual Population Survey tables, down to four-digit occupation codes.",
+      "Official quarterly Annual Population Survey tables, down to four-digit occupation codes and by region.",
+    tag: "Data",
   },
   {
-    title: "ONS Standard Occupational Classification (SOC)",
+    title: "UK STEM employment by occupation",
+    publisher: "Department for Education",
+    url: "https://explore-education-statistics.service.gov.uk/data-catalogue/data-set/664d7ad5-babe-4a1d-b719-39bb3750a426",
+    summary:
+      "Employment and women's share for every STEM occupation, from the Annual Population Survey, July 2022 to June 2023.",
+    tag: "Data",
+  },
+  {
+    title: "Gender pay gap in the UK: 2025",
+    publisher: "Office for National Statistics",
+    url: "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/bulletins/genderpaygapintheuk/2025",
+    summary:
+      "The official annual estimate. The full-time gender pay gap was 6.9% in April 2025, and 12.8% across all employees.",
+    tag: "Report",
+  },
+  {
+    title: "Gender pay gap service",
+    publisher: "GOV.UK",
+    url: "https://gender-pay-gap.service.gov.uk/",
+    summary:
+      "Search and compare the gender pay gap reported by individual UK employers, or download the full dataset.",
+    tag: "Tool",
+  },
+  {
+    title: "Labour market projections 2025 to 2035",
+    publisher: "Warwick IER for Skills England",
+    url: "https://warwick.ac.uk/fac/soc/ier/researchthemesoverview/researchprojects/labourmarketprojections2025to2035/",
+    summary:
+      "The next edition of the Working Futures series, projecting jobs by industry and occupation across the UK.",
+    tag: "Projections",
+  },
+  {
+    title: "Standard Occupational Classification",
+    publisher: "Office for National Statistics",
     url: "https://www.ons.gov.uk/methodology/classificationsandstandards/standardoccupationalclassificationsoc",
-    summary: "How the ONS defines and groups every occupation.",
-  },
-  {
-    title: "CareerSmart: Working Futures data tables",
-    url: "https://careersmart.org.uk/",
-    summary: "The full set of Working Futures occupation tables.",
+    summary: "How the ONS defines, codes and groups every occupation in the UK.",
+    tag: "Reference",
   },
 ];
 
