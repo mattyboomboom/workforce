@@ -1,0 +1,41 @@
+---
+import { sources, moreResources } from "../data/occupations";
+---
+
+<section id="sources" class="sources">
+  <p class="eyebrow">Sources & resources</p>
+  <h2>Where the numbers come from</h2>
+  <ul>
+    {
+      Object.values(sources).map((s) => (
+        <li>
+          <a href={s.url} target="_blank" rel="noopener">{s.title}</a>
+          <span class="pub">{s.publisher}</span>
+          <span class="sum">{s.summary}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <h3>Go further</h3>
+  <ul>
+    {
+      moreResources.map((r) => (
+        <li>
+          <a href={r.url} target="_blank" rel="noopener">{r.title}</a>
+          <span class="sum">{r.summary}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .sources { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--line); }
+  h2 { font-size: 26px; margin: 0 0 18px; }
+  h3 { font-size: 16px; margin: 28px 0 10px; letter-spacing: 0; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  li { display: grid; gap: 2px; max-width: 70ch; }
+  a { font-weight: 600; text-underline-offset: 3px; }
+  .pub { font-size: 13px; color: var(--muted); }
+  .sum { font-size: 14px; }
+</style>

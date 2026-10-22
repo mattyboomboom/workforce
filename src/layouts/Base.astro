@@ -1,0 +1,123 @@
+---
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/" class="brand">UK Jobs by Gender</a>
+        <nav><a href="/#chart">Chart</a><a href="/#sources">Sources</a></nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        Data: Working Futures 2024 (Warwick IER for DfE), based on the ONS Labour Force Survey.
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #f4f3ee;
+    --fg: #1b1f26;
+    --muted: #5f6877;
+    --line: #d7d5cb;
+    --panel: #ebe9e0;
+    --male: #2f6db5;
+    --female: #c8453b;
+    --font-body: "Alegreya", Georgia, "Times New Roman", serif;
+    --font-display: "Source Sans 3", "Source Sans Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c;
+      --fg: #ebe9e2;
+      --muted: #9aa0ab;
+      --line: #2b3038;
+      --panel: #1c2026;
+      --male: #5b93d6;
+      --female: #e0655a;
+      color-scheme: dark;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  a { color: inherit; }
+  a:focus-visible { outline: 2px solid var(--male); outline-offset: 2px; border-radius: 2px; }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; line-height: 1.1; letter-spacing: -0.015em; }
+  .brand, .site-header nav, .eyebrow, .ui { font-family: var(--font-display); }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .eyebrow {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--muted); font-weight: 600; margin: 0 0 8px;
+  }
+
+  .site-header { border-bottom: 1px solid var(--line); }
+  .site-header .wrap {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; padding-block: 14px;
+  }
+  .brand { font-weight: 700; text-decoration: none; letter-spacing: -0.01em; }
+  .site-header nav { display: flex; gap: 18px; font-size: 14px; }
+  .site-header nav a { color: var(--muted); text-decoration: none; }
+  .site-header nav a:hover { color: var(--fg); }
+  main.wrap { padding-block: 36px 56px; }
+  .site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .site-footer .wrap { padding-block: 20px 28px; }
+
+  /* Shared split bar */
+  .split { position: relative; display: flex; height: 18px; border-radius: 3px; overflow: hidden; min-width: 0; }
+  .split i { display: block; height: 100%; }
+  .split .m { background: var(--male); }
+  .split .f { background: var(--female); }
+  .split::after {
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+    background: var(--bg); opacity: 0.85;
+  }
+  .key { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .split i { transition: filter 0.15s ease; }
+  }
+</style>

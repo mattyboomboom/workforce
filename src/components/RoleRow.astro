@@ -1,0 +1,57 @@
+---
+import type { Occupation } from "../lib/stats";
+import { fmtCount, fmtShare } from "../lib/stats";
+
+interface Props {
+  o: Occupation;
+}
+const { o } = Astro.props;
+---
+
+<a class="row" href={`/roles/${o.slug}`}>
+  <span class="name">
+    <b>{o.name}</b>
+    <small class="mono">{fmtCount(o.total)} in work · {fmtShare(o.workforcePct)} of UK workforce</small>
+  </span>
+  <span
+    class="split"
+    role="img"
+    aria-label={`${o.name}: ${o.malePct.toFixed(0)}% male, ${o.femalePct.toFixed(0)}% female`}
+  >
+    <i class="m" style={`width:${o.malePct}%`}></i><i class="f" style={`width:${o.femalePct}%`}></i>
+  </span>
+  <span class="pct mono">
+    <span class="pm">{o.malePct.toFixed(1)}% M</span>
+    <span class="pf">{o.femalePct.toFixed(1)}% F</span>
+  </span>
+  <span class="arrow" aria-hidden="true">›</span>
+</a>
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 104px 14px;
+    gap: 14px;
+    align-items: center;
+    padding: 7px 8px;
+    margin-inline: -8px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  .row:hover, .row:focus-visible { background: var(--panel); }
+  .row:hover .split i { filter: saturate(1.15) brightness(1.05); }
+  .name { min-width: 0; }
+  .name b { display: block; font-weight: 500; font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; }
+  .name small { color: var(--muted); font-size: 11px; }
+  .pct { font-size: 11.5px; text-align: right; white-space: nowrap; line-height: 1.35; }
+  .pct span { display: block; }
+  .pm { color: var(--male); }
+  .pf { color: var(--female); }
+  .arrow { color: var(--muted); font-size: 18px; line-height: 1; }
+  @media (max-width: 640px) {
+    .row { grid-template-columns: minmax(0, 1fr) 92px; row-gap: 6px; }
+    .row .split { grid-column: 1 / -1; order: 3; }
+    .arrow { display: none; }
+  }
+</style>

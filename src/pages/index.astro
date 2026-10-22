@@ -1,0 +1,101 @@
+---
+import Base from "../layouts/Base.astro";
+import RoleRow from "../components/RoleRow.astro";
+import Sources from "../components/Sources.astro";
+import { occupations, summary, fmtCount } from "../lib/stats";
+
+const coverage = Math.round(summary.coveragePct);
+---
+
+<Base
+  title="UK Jobs by Gender"
+  description={`${summary.count} UK occupations ranked from most male to most female, covering ${coverage}% of everyone in work.`}
+>
+  <section class="cover">
+    <p class="eyebrow">UK workforce · 2024</p>
+    <h1>Who does which job in the UK?</h1>
+    <p class="intro">
+      Most UK jobs are still split along gender lines. Almost everyone fitting boilers, driving lorries or
+      repairing cars is a man. Almost everyone looking after toddlers, assisting in classrooms or running a
+      manager's diary is a woman. This project ranks {summary.count} of the UK's occupations, from the most
+      male to the most female, using official workforce estimates. It covers the whole economy, from trades
+      and transport to care, retail and the professions.
+    </p>
+    <p class="intro">Select any job to see its full numbers and what the role involves.</p>
+
+    <dl class="facts">
+      <div>
+        <dt class="mono">{coverage}%</dt>
+        <dd>of the UK workforce is covered by the {summary.count} jobs shown, about {fmtCount(summary.covered)} people</dd>
+      </div>
+      <div>
+        <dt class="mono">{summary.otherRoles}</dt>
+        <dd>other, mostly smaller, occupations in the source data are not shown</dd>
+      </div>
+      <div>
+        <dt class="mono">{summary.under10} <span class="vs">vs</span> {summary.over90}</dt>
+        <dd>jobs on the chart are over 90% male, compared with those over 90% female</dd>
+      </div>
+      <div>
+        <dt class="mono">{fmtCount(summary.ukTotal)}</dt>
+        <dd>people in work across all {summary.sourceOccupations} occupations, {summary.ukFemalePct.toFixed(0)}% of them women</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section id="chart" class="chart">
+    <div class="chart-head">
+      <h2>From most male to most female</h2>
+      <div class="legend">
+        <span><i class="key" style="background:var(--male)"></i>Male</span>
+        <span><i class="key" style="background:var(--female)"></i>Female</span>
+        <span>Notch = 50/50</span>
+      </div>
+    </div>
+    <div class="cols" aria-hidden="true">
+      <span>Occupation · UK in work</span><span>Share of workers</span><span>Male / Female</span>
+    </div>
+    <div class="rows">
+      {occupations.map((o) => <RoleRow o={o} />)}
+    </div>
+  </section>
+
+  <Sources />
+</Base>
+
+<style>
+  .cover { padding-bottom: 8px; }
+  h1 { font-size: clamp(36px, 7vw, 64px); margin: 0 0 18px; font-weight: 700; max-width: 16ch; }
+  .intro { font-size: 19px; max-width: 64ch; margin: 0 0 12px; }
+  .intro + .intro { color: var(--muted); font-size: 16px; font-style: italic; }
+  .facts {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+    margin: 28px 0 0; padding: 0;
+  }
+  .facts div { background: var(--panel); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+  .facts dt { font-size: 28px; font-weight: 500; line-height: 1.1; }
+  .facts .vs { font-size: 14px; color: var(--muted); }
+  .facts dd { margin: 6px 0 0; font-size: 15px; line-height: 1.35; color: var(--muted); }
+
+  .chart { margin-top: 48px; }
+  .chart-head {
+    display: flex; justify-content: space-between; align-items: end; gap: 12px 24px;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .chart-head h2 { font-size: 26px; margin: 0; }
+  .legend { font-family: var(--font-display); display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .cols {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 104px 14px; gap: 14px;
+    font-family: var(--font-display); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
+    padding-bottom: 6px; border-bottom: 1px solid var(--line);
+  }
+  .cols span:nth-child(3) { text-align: right; }
+
+  @media (max-width: 820px) {
+    .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .cols { display: none; }
+  }
+</style>

@@ -1,0 +1,184 @@
+---
+import type { GetStaticPaths } from "astro";
+import Base from "../../layouts/Base.astro";
+import { sources } from "../../data/occupations";
+import {
+  occupations,
+  summary,
+  fmtExact,
+  fmtCount,
+  fmtShare,
+  ratioLine,
+  positionLine,
+  ordinal,
+  type Occupation,
+} from "../../lib/stats";
+
+export const getStaticPaths = (() =>
+  occupations.map((o, i) => ({
+    params: { slug: o.slug },
+    props: {
+      o,
+      prev: occupations[i - 1] ?? null,
+      next: occupations[i + 1] ?? null,
+    },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  o: Occupation;
+  prev: Occupation | null;
+  next: Occupation | null;
+}
+const { o, prev, next } = Astro.props;
+
+const diff = o.femalePct - summary.ukFemalePct;
+const diffLine =
+  Math.abs(diff) < 1
+    ? "About the same female share as the UK workforce overall"
+    : `${Math.abs(diff).toFixed(0)} percentage points ${diff > 0 ? "more" : "less"} female than the UK workforce overall (${summary.ukFemalePct.toFixed(0)}%)`;
+const usedSources = new Set(["wf", ...(o.notes ?? []).map((n) => n.source)]);
+---
+
+<Base
+  title={`${o.name} · UK Jobs by Gender`}
+  description={`${o.name}: ${o.femalePct.toFixed(0)}% female, ${o.malePct.toFixed(0)}% male, about ${fmtCount(o.total)} people in work in the UK.`}
+>
+  <a class="back" href="/#chart">‹ All jobs</a>
+
+  <header class="role-head">
+    <p class="eyebrow">{positionLine(o, occupations.length)}</p>
+    <h1>{o.name}</h1>
+    <p class="desc">{o.description}</p>
+  </header>
+
+  <section class="big">
+    <div class="big-labels mono">
+      <span class="pm">{o.malePct.toFixed(1)}% male</span>
+      <span class="pf">{o.femalePct.toFixed(1)}% female</span>
+    </div>
+    <div class="split big-bar" role="img" aria-label={`${o.malePct.toFixed(0)}% male, ${o.femalePct.toFixed(0)}% female`}>
+      <i class="m" style={`width:${o.malePct}%`}></i><i class="f" style={`width:${o.femalePct}%`}></i>
+    </div>
+    <p class="ratio">{ratioLine(o)}</p>
+  </section>
+
+  <dl class="stats">
+    <div><dt>People in work</dt><dd class="mono">{fmtExact(o.total)}</dd></div>
+    <div><dt>Share of UK workforce</dt><dd class="mono">{fmtShare(o.workforcePct)}</dd></div>
+    <div><dt>Men</dt><dd class="mono pm">{fmtExact(o.men)}</dd></div>
+    <div><dt>Women</dt><dd class="mono pf">{fmtExact(o.women)}</dd></div>
+    <div><dt>Size</dt><dd>{ordinal(o.sizeRank)} largest of {occupations.length} jobs on the chart</dd></div>
+    <div><dt>Compared with all jobs</dt><dd>{diffLine}</dd></div>
+  </dl>
+
+  {
+    o.notes && o.notes.length > 0 && (
+      <section class="notes">
+        <h2>More from the data</h2>
+        <ul>
+          {o.notes.map((n) => (
+            <li>
+              {n.text}{" "}
+              <a href={sources[n.source].url} target="_blank" rel="noopener">
+                {sources[n.source].publisher.split(",")[0]}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="meta">
+    <h2>Data</h2>
+    <p>
+      Occupation in Working Futures 2024: <strong>{o.sourceLabel}</strong>
+    </p>
+    <ul>
+      {
+        [...usedSources].map((id) => {
+          const s = sources[id as keyof typeof sources];
+          return (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener">{s.title}</a>
+              <span>{s.publisher}</span>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </section>
+
+  <nav class="pager" aria-label="Neighbouring jobs">
+    {
+      prev ? (
+        <a href={`/roles/${prev.slug}`} class="prev">
+          <span>More male</span>
+          <b>‹ {prev.name}</b>
+          <small class="mono">{prev.femalePct.toFixed(1)}% F</small>
+        </a>
+      ) : <span />
+    }
+    {
+      next ? (
+        <a href={`/roles/${next.slug}`} class="next">
+          <span>More female</span>
+          <b>{next.name} ›</b>
+          <small class="mono">{next.femalePct.toFixed(1)}% F</small>
+        </a>
+      ) : <span />
+    }
+  </nav>
+</Base>
+
+<style>
+  .back { font-family: var(--font-display); font-size: 14px; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--fg); }
+  .role-head { margin: 22px 0 28px; }
+  h1 { font-size: clamp(32px, 6vw, 54px); margin: 0 0 14px; }
+  .desc { font-size: 20px; max-width: 60ch; margin: 0; }
+
+  .big { margin-bottom: 32px; }
+  .big-labels { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px; gap: 12px; }
+  .big-bar { height: 44px; border-radius: 5px; }
+  .ratio { margin: 10px 0 0; color: var(--muted); }
+  .pm { color: var(--male); }
+  .pf { color: var(--female); }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+    margin: 0 0 36px;
+  }
+  .stats div { background: var(--bg); padding: 14px 16px; min-width: 0; }
+  .stats dt { font-family: var(--font-display); font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .stats dd { margin: 4px 0 0; font-size: 17px; }
+  .stats dd.mono { font-size: 22px; }
+
+  h2 { font-size: 20px; margin: 0 0 12px; letter-spacing: -0.01em; }
+  .notes, .meta { margin-bottom: 32px; max-width: 70ch; }
+  .notes ul, .meta ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+  .notes a, .meta a { text-underline-offset: 3px; }
+  .meta p { margin: 0 0 10px; }
+  .meta li span { display: block; font-size: 13px; color: var(--muted); }
+
+  .pager {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    border-top: 1px solid var(--line); padding-top: 20px;
+  }
+  .pager a {
+    display: grid; gap: 2px; text-decoration: none; padding: 12px 14px;
+    border-radius: 6px; background: var(--panel); min-width: 0;
+  }
+  .pager a:hover { outline: 1px solid var(--line); }
+  .pager .next { text-align: right; }
+  .pager span { font-family: var(--font-display); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .pager b { overflow-wrap: anywhere; }
+  .pager small { color: var(--muted); font-size: 12px; }
+
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pager { grid-template-columns: 1fr; }
+    .pager .next { text-align: left; }
+  }
+</style>
