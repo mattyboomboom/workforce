@@ -1,0 +1,133 @@
+---
+/**
+ * Jobs mosaic: nested treemap. Area = people in work, colour = gender mix.
+ * Families are laid out first, then the jobs inside each family.
+ */
+import { families, squarify, mixColor, textOn } from "../../lib/charts";
+import { fmtCount } from "../../lib/stats";
+import { url } from "../../lib/url";
+
+const W = 1000;
+const H = 660;
+const HEADER = 18;
+const GAP = 3;
+
+const famRects = squarify(
+  families.map((f) => ({ value: f.total, data: f })),
+  { x: 0, y: 0, w: W, h: H },
+);
+
+function wrap(text: string, maxChars: number): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const w of words) {
+    if ((line + " " + w).trim().length > maxChars && line) {
+      lines.push(line);
+      line = w;
+    } else line = (line + " " + w).trim();
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+const blocks = famRects.map((fr) => {
+  const inner = {
+    x: fr.x + GAP,
+    y: fr.y + GAP + HEADER,
+    w: Math.max(fr.w - GAP * 2, 0),
+    h: Math.max(fr.h - GAP * 2 - HEADER, 0),
+  };
+  const cells = squarify(
+    fr.data.jobs.map((j) => ({ value: j.total, data: j })),
+    inner,
+  ).map((c) => {
+    const fill = mixColor(c.data.femalePct);
+    // Try progressively smaller type until the name fits the block
+    const start = c.w > 150 && c.h > 70 ? 14 : 12;
+    let fs = start;
+    let lines: string[] = [];
+    let showName = false;
+    const shortName = c.data.name.split(/ in | & |, /)[0];
+    const names = shortName !== c.data.name ? [c.data.name, shortName] : [c.data.name];
+    outer: for (const nm of names) {
+      for (const size of [start, 12, 10.5, 9.5].filter((s) => s <= start)) {
+        const maxChars = Math.max(Math.floor((c.w - 10) / (size * 0.56)), 1);
+        const ls = wrap(nm, maxChars);
+        const nameH = ls.length * size * 1.15 + 8;
+        if (ls.every((l) => l.length <= maxChars) && ls.length <= 4 && nameH < c.h) {
+          fs = size;
+          lines = ls;
+          showName = true;
+          break outer;
+        }
+      }
+    }
+    const countText = `${fmtCount(c.data.total)} · ${c.data.femalePct.toFixed(0)}% F`;
+    const needH = lines.length * fs * 1.15 + fs + 10;
+    const showCount = showName && c.h > needH && countText.length * (fs - 1) * 0.62 < c.w - 10;
+    return { ...c, fill, ink: textOn(fill), fs, lines, showName, showCount };
+  });
+  // Family label: drop the count, then shorten the name, until it fits the block
+  const avail = fr.w - GAP * 2 - 8;
+  const charW = 8.1;
+  const countText = ` ${fmtCount(fr.data.total)} · ${fr.data.femalePct.toFixed(0)}% F`;
+  let famName: string = fr.data.name;
+  let showFamCount = (famName.length + countText.length) * charW < avail;
+  if (famName.length * charW > avail) famName = famName.split(/ & |, /)[0];
+  if (famName.length * charW > avail) famName = "";
+  return { fr, cells, famName, showFamCount, countText };
+});
+---
+
+<div class="scroll">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="mosaic-title" class="mosaic">
+    <title id="mosaic-title">Treemap of {families.reduce((s, f) => s + f.jobs.length, 0)} UK jobs grouped into families, sized by people in work and coloured by gender mix</title>
+    {
+      blocks.map(({ fr, cells, famName, showFamCount, countText }) => (
+        <g>
+          <rect x={fr.x + 1} y={fr.y + 1} width={Math.max(fr.w - 2, 0)} height={Math.max(fr.h - 2, 0)} rx="4" class="fam-bg" />
+          <text x={fr.x + GAP + 4} y={fr.y + GAP + 13} class="fam-label">
+            {famName}
+            {showFamCount && <tspan class="fam-count">{countText}</tspan>}
+          </text>
+          {cells.map((c) => (
+            <a href={url(`roles/${c.data.slug}`)}>
+              <title>{`${c.data.name}: ${c.data.total.toLocaleString("en-GB")} people, ${c.data.femalePct.toFixed(0)}% female`}</title>
+              <rect x={c.x + 1} y={c.y + 1} width={Math.max(c.w - 2, 0)} height={Math.max(c.h - 2, 0)} rx="2" fill={c.fill} class="cell" />
+              {c.showName && (
+                <text x={c.x + 6} y={c.y + 6 + c.fs} fill={c.ink} font-size={c.fs} class="cell-label">
+                  {c.lines.map((l, i) => (
+                    <tspan x={c.x + 6} dy={i === 0 ? 0 : c.fs * 1.15}>{l}</tspan>
+                  ))}
+                </text>
+              )}
+              {c.showCount && (
+                <text x={c.x + 6} y={c.y + 6 + c.fs + c.lines.length * c.fs * 1.15 + 2} fill={c.ink} font-size={c.fs - 1} class="cell-count">
+                  {fmtCount(c.data.total)} · {c.data.femalePct.toFixed(0)}% F
+                </text>
+              )}
+            </a>
+          ))}
+        </g>
+      ))
+    }
+  </svg>
+</div>
+
+<style>
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .mosaic { display: block; width: 100%; min-width: 720px; height: auto; }
+  .fam-bg { fill: var(--panel); }
+  .fam-label {
+    font-family: var(--font-display); font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; fill: var(--fg);
+  }
+  .fam-count { font-weight: 400; fill: var(--muted); letter-spacing: 0.02em; }
+  .cell { transition: opacity 0.15s ease; }
+  a:hover .cell, a:focus-visible .cell { opacity: 0.82; }
+  a:focus-visible { outline: none; }
+  a:focus-visible .cell { stroke: var(--fg); stroke-width: 2; }
+  .cell-label { font-family: var(--font-display); font-weight: 600; pointer-events: none; }
+  .cell-count { font-family: var(--font-mono); opacity: 0.85; pointer-events: none; }
+</style>

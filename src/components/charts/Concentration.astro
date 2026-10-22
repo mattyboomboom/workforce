@@ -1,0 +1,61 @@
+---
+/** How quickly the biggest jobs account for each sex. */
+import { concentration } from "../../lib/charts";
+
+const men = concentration("men");
+const women = concentration("women");
+const n = men.length;
+const W = 1000;
+const H = 380;
+const M = { l: 56, r: 24, t: 20, b: 46 };
+const x = (i: number) => M.l + ((i - 1) / (n - 1)) * (W - M.l - M.r);
+const y = (v: number) => M.t + (1 - v) * (H - M.t - M.b);
+const path = (arr: number[]) => arr.map((v, i) => `${i === 0 ? "M" : "L"}${x(i + 1).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+// Shade only the gap between the two curves
+const gap = `${path(women)} ${men
+  .map((v, i) => [i, v] as const)
+  .reverse()
+  .map(([i, v]) => `L${x(i + 1).toFixed(1)},${y(v).toFixed(1)}`)
+  .join(" ")} Z`;
+const K = 10;
+const xt = [1, 10, 20, 40, 60, n];
+const yt = [0, 0.25, 0.5, 0.75, 1];
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+---
+
+<div class="scroll">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="conc-title" class="conc">
+    <title id="conc-title">Line chart: the top {K} jobs for women hold {pct(women[K - 1])} of women, while the top {K} jobs for men hold {pct(men[K - 1])} of men</title>
+    {yt.map((t) => <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} class="grid" />)}
+    {yt.map((t) => <text x={M.l - 10} y={y(t) + 4} text-anchor="end" class="tick">{pct(t)}</text>)}
+    {xt.map((t) => <text x={x(t)} y={H - M.b + 20} text-anchor="middle" class="tick">{t}</text>)}
+    <text x={(M.l + W - M.r) / 2} y={H - 6} text-anchor="middle" class="axis-title">Number of jobs, biggest first</text>
+    <path d={gap} class="gap" />
+    <path d={path(women)} class="line f" />
+    <path d={path(men)} class="line m" />
+    <line x1={x(K)} x2={x(K)} y1={y(0)} y2={y(women[K - 1])} class="marker" />
+    <circle cx={x(K)} cy={y(women[K - 1])} r="6" class="pt f" />
+    <circle cx={x(K)} cy={y(men[K - 1])} r="6" class="pt m" />
+    <text x={x(K) + 12} y={y(women[K - 1]) - 8} class="call f">{pct(women[K - 1])} of women work in their top {K} jobs</text>
+    <text x={x(K) + 12} y={y(men[K - 1]) + 22} class="call m">{pct(men[K - 1])} of men work in their top {K} jobs</text>
+  </svg>
+</div>
+
+<style>
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .conc { display: block; width: 100%; min-width: 600px; height: auto; }
+  .grid { stroke: var(--line); }
+  .tick { font-family: var(--font-mono); font-size: 12px; fill: var(--muted); }
+  .axis-title { font-family: var(--font-display); font-size: 13px; fill: var(--muted); }
+  .gap { fill: var(--female); opacity: 0.12; }
+  .line { fill: none; stroke-width: 3; stroke-linejoin: round; }
+  .line.m { stroke: var(--male); }
+  .line.f { stroke: var(--female); }
+  .marker { stroke: var(--muted); stroke-dasharray: 3 4; }
+  .pt { stroke: var(--bg); stroke-width: 2; }
+  .pt.m { fill: var(--male); }
+  .pt.f { fill: var(--female); }
+  .call { font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+  .call.m { fill: var(--male); }
+  .call.f { fill: var(--female); }
+</style>

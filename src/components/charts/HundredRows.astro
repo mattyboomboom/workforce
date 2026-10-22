@@ -1,0 +1,84 @@
+---
+/** Of every 100 men / women on the chart, how many work in each job family. */
+import { families, apportion, type Sex } from "../../lib/charts";
+
+interface Props {
+  sexes?: Sex[];
+}
+const { sexes = ["men", "women"] } = Astro.props;
+const both = sexes.length === 2;
+
+const fams = [...families].sort((a, b) => a.femalePct - b.femalePct);
+const counts: Record<Sex, number[]> = {
+  men: apportion(fams.map((f) => f.men), 100),
+  women: apportion(fams.map((f) => f.women), 100),
+};
+const rows = fams.map((f, i) => ({ f, men: counts.men[i], women: counts.women[i] }));
+const ordered = both ? rows : [...rows].sort((a, b) => b[sexes[0]] - a[sexes[0]]);
+---
+
+<div class={both ? "hr both" : "hr single"}>
+  {
+    both && (
+      <div class="hr-head" aria-hidden="true">
+        <span class="hm">Of every 100 men</span>
+        <span />
+        <span class="hf">Of every 100 women</span>
+      </div>
+    )
+  }
+  <ul>
+    {
+      ordered.map((r) =>
+        both ? (
+          <li class="row">
+            <span class="dots m" aria-label={`${r.men} in 100 men`}>
+              <b class="n mono">{r.men}</b>
+              {Array.from({ length: r.men }, () => <i />)}
+            </span>
+            <span class="fam">{r.f.name}</span>
+            <span class="dots f" aria-label={`${r.women} in 100 women`}>
+              {Array.from({ length: r.women }, () => <i />)}
+              <b class="n mono">{r.women}</b>
+            </span>
+          </li>
+        ) : (
+          <li class="row">
+            <span class="fam">{r.f.name}</span>
+            <span class={`dots ${sexes[0] === "men" ? "m" : "f"}`} aria-label={`${r[sexes[0]]} in 100`}>
+              {Array.from({ length: r[sexes[0]] }, () => <i />)}
+              <b class="n mono">{r[sexes[0]]}</b>
+            </span>
+          </li>
+        ),
+      )
+    }
+  </ul>
+</div>
+
+<style>
+  .hr { font-family: var(--font-display); }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .both .row, .hr-head { display: grid; grid-template-columns: minmax(0, 1fr) 190px minmax(0, 1fr); gap: 12px; align-items: center; }
+  .single .row { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 12px; align-items: center; }
+  .hr-head { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+  .hm { color: var(--male); text-align: right; }
+  .hf { color: var(--female); }
+  .fam { font-size: 14px; line-height: 1.2; }
+  .both .fam { text-align: center; }
+  .dots { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; min-height: 12px; }
+  .dots.m { color: var(--male); }
+  .dots.f { color: var(--female); }
+  .both .dots.m { justify-content: flex-end; }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; display: block; }
+  .n { font-size: 12px; font-weight: 500; min-width: 20px; }
+  .both .dots.m .n { text-align: right; margin-right: 4px; }
+  .dots.f .n, .single .n { margin-left: 4px; }
+  @media (max-width: 640px) {
+    .both .row, .hr-head { grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr); gap: 8px; }
+    .single .row { grid-template-columns: 120px minmax(0, 1fr); }
+    .fam { font-size: 12px; }
+    .dots i { width: 7px; height: 7px; }
+    .dots { gap: 2px; }
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+/**
+ * Gender spectrum: every job as a bubble on a 0–100% female axis.
+ * Bubble area = people in work.
+ */
+import { beeswarm, mixColor, textOn } from "../../lib/charts";
+import { occupations, fmtCount } from "../../lib/stats";
+import { url } from "../../lib/url";
+
+const W = 1000;
+const ML = 30;
+const MR = 30;
+const maxTotal = Math.max(...occupations.map((o) => o.total));
+const R_MAX = 44;
+const rOf = (t: number) => Math.max(Math.sqrt(t / maxTotal) * R_MAX, 3.5);
+const xOf = (p: number) => ML + (p / 100) * (W - ML - MR);
+
+const placed = beeswarm(occupations.map((o) => ({ x: xOf(o.femalePct), r: rOf(o.total), data: o })));
+const top = Math.min(...placed.map((p) => p.y - p.r));
+const bottom = Math.max(...placed.map((p) => p.y + p.r));
+const PAD_T = 16;
+const AXIS = 62;
+const cy = PAD_T - top;
+const H = Math.ceil(cy + bottom + AXIS);
+const axisY = cy + bottom + 14;
+const ticks = [0, 25, 50, 75, 100];
+const labelled = new Set([...occupations].sort((a, b) => b.total - a.total).slice(0, 9).map((o) => o.slug));
+---
+
+<div class="scroll">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="spectrum-title" class="spectrum">
+    <title id="spectrum-title">Bubble chart placing each job by its female share, with bubble size showing how many people do it</title>
+    <rect x={xOf(0)} y={PAD_T - 6} width={xOf(50) - xOf(0)} height={axisY - PAD_T + 6} class="half half-m" />
+    <rect x={xOf(50)} y={PAD_T - 6} width={xOf(100) - xOf(50)} height={axisY - PAD_T + 6} class="half half-f" />
+    {ticks.map((t) => <line x1={xOf(t)} x2={xOf(t)} y1={PAD_T - 6} y2={axisY} class={t === 50 ? "grid mid" : "grid"} />)}
+    <line x1={xOf(0)} x2={xOf(100)} y1={axisY} y2={axisY} class="axis" />
+    {
+      ticks.map((t) => (
+        <text x={xOf(t)} y={axisY + 18} text-anchor={t === 0 ? "start" : t === 100 ? "end" : "middle"} class="tick">
+          {t === 50 ? "50/50" : `${t}% female`}
+        </text>
+      ))
+    }
+    <text x={xOf(1)} y={axisY + 36} class="side side-m">All-male end</text>
+    <text x={xOf(99)} y={axisY + 36} text-anchor="end" class="side side-f">All-female end</text>
+    {
+      placed.map((p) => {
+        const fill = mixColor(p.data.femalePct);
+        const show = labelled.has(p.data.slug) && p.r > 22;
+        const short = p.data.name.split(" & ")[0];
+        return (
+          <a href={url(`roles/${p.data.slug}`)}>
+            <title>{`${p.data.name}: ${p.data.total.toLocaleString("en-GB")} people, ${p.data.femalePct.toFixed(0)}% female`}</title>
+            <circle cx={p.x} cy={cy + p.y} r={p.r} fill={fill} class="bubble" />
+            {show && (
+              <text x={p.x} y={cy + p.y + 1} text-anchor="middle" fill={textOn(fill)} class="b-label">
+                <tspan x={p.x} dy="-0.2em">{short.length > 12 ? short.split(" ")[0] : short}</tspan>
+                <tspan x={p.x} dy="1.15em" class="b-num">{fmtCount(p.data.total)}</tspan>
+              </text>
+            )}
+          </a>
+        );
+      })
+    }
+  </svg>
+</div>
+
+<style>
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .spectrum { display: block; width: 100%; min-width: 720px; height: auto; }
+  .half { opacity: 0.06; }
+  .half-m { fill: var(--male); }
+  .half-f { fill: var(--female); }
+  .grid { stroke: var(--line); stroke-width: 1; }
+  .grid.mid { stroke: var(--muted); stroke-dasharray: 3 4; }
+  .axis { stroke: var(--muted); }
+  .tick { font-family: var(--font-display); font-size: 12px; fill: var(--muted); }
+  .side { font-family: var(--font-display); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .side-m { fill: var(--male); }
+  .side-f { fill: var(--female); }
+  .bubble { stroke: var(--bg); stroke-width: 1.2; transition: opacity 0.15s; }
+  a:hover .bubble, a:focus-visible .bubble { opacity: 0.8; stroke: var(--fg); }
+  a:focus-visible { outline: none; }
+  .b-label { font-family: var(--font-display); font-size: 11.5px; font-weight: 700; pointer-events: none; }
+  .b-num { font-family: var(--font-mono); font-weight: 400; font-size: 10.5px; }
+</style>

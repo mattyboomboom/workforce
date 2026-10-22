@@ -1,0 +1,152 @@
+---
+import Base from "../layouts/Base.astro";
+import Figure from "../components/charts/Figure.astro";
+import Facts from "../components/charts/Facts.astro";
+import ScaleLegend from "../components/charts/ScaleLegend.astro";
+import Mosaic from "../components/charts/Mosaic.astro";
+import Spectrum from "../components/charts/Spectrum.astro";
+import Butterfly from "../components/charts/Butterfly.astro";
+import HundredRows from "../components/charts/HundredRows.astro";
+import Concentration from "../components/charts/Concentration.astro";
+import {
+  totals,
+  dissimilarity,
+  families,
+  concentration,
+  shareInJobsDominatedBy,
+  crossover,
+} from "../lib/charts";
+import { occupations, summary, fmtCount } from "../lib/stats";
+import { url } from "../lib/url";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const top10w = concentration("women")[9];
+const top10m = concentration("men")[9];
+const male90 = shareInJobsDominatedBy("men", 90);
+const female90 = shareInJobsDominatedBy("women", 90);
+const menCross = crossover("men");
+const womenCross = crossover("women");
+
+const maleDom = occupations.filter((o) => o.femalePct < 30);
+const femaleDom = occupations.filter((o) => o.femalePct > 70);
+const avg = (a: typeof occupations) => a.reduce((s, o) => s + o.total, 0) / a.length;
+
+const biggest = [...occupations].sort((a, b) => b.total - a.total)[0];
+const topMen = [...occupations].sort((a, b) => b.men - a.men)[0];
+const famBySize = [...families].sort((a, b) => b.total - a.total);
+const mostFemaleFam = [...families].sort((a, b) => b.femalePct - a.femalePct)[0];
+const mostMaleFam = [...families].sort((a, b) => a.femalePct - b.femalePct)[0];
+---
+
+<Base
+  title="Everyone at Work · UK Jobs by Gender"
+  description={`${fmtCount(summary.covered)} UK workers across ${summary.count} jobs, shown by size and gender mix.`}
+>
+  <header class="page-head">
+    <p class="eyebrow">Everyone at work</p>
+    <h1>Same workforce, different jobs</h1>
+    <p class="lede">
+      The UK workforce is almost exactly half men and half women. The jobs they do are not. These charts add a second
+      dimension to the gender split: how many people actually do each job.
+    </p>
+    <Facts
+      items={[
+        { big: fmtCount(totals.men), text: `men in the ${summary.count} jobs shown`, tone: "m" },
+        { big: fmtCount(totals.women), text: `women in the same ${summary.count} jobs`, tone: "f" },
+        {
+          big: pct(dissimilarity),
+          text: "of workers would have to switch jobs for every job to have the same male/female mix",
+        },
+        { big: fmtCount(biggest.total), text: `${biggest.name.toLowerCase()}, the UK's largest single job` },
+      ]}
+    />
+  </header>
+
+  <Figure
+    id="mosaic"
+    kicker="The jobs mosaic"
+    title="The biggest blocks are red"
+    dek={`Each rectangle is a job, sized by the number of people who do it and coloured by its gender mix. ${famBySize[0].name} is the largest family on the chart, and ${mostFemaleFam.name.toLowerCase()} is the most female at ${mostFemaleFam.femalePct.toFixed(0)}%. ${mostMaleFam.name} is the most male, at ${(100 - mostMaleFam.femalePct).toFixed(0)}% men.`}
+    note="Select any block to open that job. Job families are this site's own grouping."
+  >
+    <ScaleLegend slot="aside" />
+    <Mosaic />
+  </Figure>
+
+  <Figure
+    id="spectrum"
+    kicker="The gender spectrum"
+    title="Many small men's jobs, a few huge women's jobs"
+    dek={`Each bubble is a job, placed by its share of women and sized by headcount. The ${maleDom.length} jobs that are over 70% male average ${fmtCount(avg(maleDom))} people each. The ${femaleDom.length} jobs that are over 70% female average ${fmtCount(avg(femaleDom))}, more than twice as many.`}
+    note="Bubble area is proportional to the number of people in work. Select a bubble to open that job."
+  >
+    <Spectrum />
+  </Figure>
+
+  <Figure
+    id="concentration"
+    kicker="Packed or spread"
+    title={`${pct(top10w)} of women work in just ten jobs`}
+    dek={`Rank each sex's jobs from biggest to smallest and add them up. Women are concentrated in a handful of very large occupations, led by care work, retail, nursing and cleaning. Men are spread across many more mid-sized jobs, so their top ten account for only ${pct(top10m)}.`}
+  >
+    <Concentration />
+  </Figure>
+
+  <Figure
+    id="hundred"
+    kicker="Of every 100 workers"
+    title="Where 100 men and 100 women work"
+    dek="Every dot is one person in a hundred. Families run from the most male at the top to the most female at the bottom."
+  >
+    <HundredRows />
+  </Figure>
+
+  <Figure
+    id="head-to-head"
+    kicker="Head to head"
+    title="The 40 largest jobs in real numbers"
+    dek={`Percentages hide scale. Counted in people, the single biggest employer of men is ${topMen.name.toLowerCase()}, a job that is ${topMen.femalePct.toFixed(0)}% female. More men work in female-dominated jobs (${fmtCount(menCross)}) than women in male-dominated ones (${fmtCount(womenCross)}).`}
+    note="Male-dominated and female-dominated mean at least 70% one sex."
+  >
+    <Butterfly limit={40} />
+  </Figure>
+
+  <Figure id="segregation" kicker="Segregation in numbers" title="Men are more likely to work almost only with men">
+    <Facts
+      items={[
+        { big: pct(male90), text: "of men work in jobs that are over 90% male", tone: "m" },
+        { big: pct(female90), text: "of women work in jobs that are over 90% female", tone: "f" },
+        { big: fmtCount(menCross), text: "men work in jobs that are at least 70% female", tone: "m" },
+        { big: fmtCount(womenCross), text: "women work in jobs that are at least 70% male", tone: "f" },
+      ]}
+    />
+  </Figure>
+
+  <nav class="next" aria-label="More summaries">
+    <a href={url("men")} class="m"><span>Summary</span><b>Men at work ›</b></a>
+    <a href={url("women")} class="f"><span>Summary</span><b>Women at work ›</b></a>
+  </nav>
+
+  <p class="method">
+    All figures cover the {summary.count} jobs on this site, {Math.round(summary.coveragePct)}% of the UK workforce, from
+    Working Futures 2024.
+  </p>
+</Base>
+
+<style>
+  .page-head { margin-bottom: 8px; }
+  h1 { font-size: clamp(34px, 6vw, 58px); margin: 0 0 16px; max-width: 18ch; }
+  .lede { font-size: 19px; max-width: 62ch; margin: 0; }
+  .next { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 64px; }
+  .next a {
+    display: grid; gap: 2px; padding: 18px 20px; border-radius: 10px; text-decoration: none;
+    border: 1px solid var(--line); background: var(--bg);
+  }
+  .next a:hover { border-color: var(--muted); }
+  .next span { font-family: var(--font-display); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .next b { font-family: var(--font-display); font-size: 22px; }
+  .next .m b { color: var(--male); }
+  .next .f b { color: var(--female); }
+  .method { margin-top: 28px; font-size: 14px; color: var(--muted); }
+  @media (max-width: 560px) { .next { grid-template-columns: 1fr; } }
+</style>

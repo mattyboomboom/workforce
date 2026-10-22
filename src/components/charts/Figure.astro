@@ -1,0 +1,28 @@
+---
+/** Section wrapper for a chart: label, headline insight, explainer, chart, note. */
+interface Props {
+  id?: string;
+  kicker: string;
+  title: string;
+  dek?: string;
+  note?: string;
+}
+const { id, kicker, title, dek, note } = Astro.props;
+---
+
+<section class="figure" id={id}>
+  <p class="eyebrow">{kicker}</p>
+  <h2>{title}</h2>
+  {dek && <p class="dek">{dek}</p>}
+  <slot name="aside" />
+  <div class="chart"><slot /></div>
+  {note && <p class="note">{note}</p>}
+</section>
+
+<style>
+  .figure { margin-top: 64px; }
+  h2 { font-size: clamp(24px, 3.6vw, 34px); margin: 0 0 10px; max-width: 26ch; }
+  .dek { font-size: 18px; max-width: 64ch; margin: 0 0 18px; }
+  .chart { margin-top: 18px; }
+  .note { font-size: 14px; color: var(--muted); margin: 12px 0 0; max-width: 70ch; font-style: italic; }
+</style>

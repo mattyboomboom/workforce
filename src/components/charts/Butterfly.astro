@@ -1,0 +1,74 @@
+---
+/** Head to head: men to the left, women to the right, in real numbers. */
+import { occupations, fmtCount } from "../../lib/stats";
+import { url } from "../../lib/url";
+
+interface Props {
+  limit?: number;
+}
+const { limit = 40 } = Astro.props;
+const rows = [...occupations].sort((a, b) => b.total - a.total).slice(0, limit);
+const max = Math.max(...rows.flatMap((r) => [r.men, r.women]));
+const ticks = [0, 250_000, 500_000, 750_000].filter((t) => t <= max);
+---
+
+<div class="bf">
+  <div class="bf-head" aria-hidden="true">
+    <span class="hm">← Men</span><span></span><span class="hf">Women →</span>
+  </div>
+  <div class="bf-scale" aria-hidden="true">
+    <span class="sm">{ticks.map((t) => <i style={`right:${(t / max) * 100}%`}>{t === 0 ? "0" : fmtCount(t)}</i>)}</span>
+    <span></span>
+    <span class="sf">{ticks.map((t) => <i style={`left:${(t / max) * 100}%`}>{t === 0 ? "0" : fmtCount(t)}</i>)}</span>
+  </div>
+  <ol class="bf-rows">
+    {
+      rows.map((o) => (
+        <li>
+          <a href={url(`roles/${o.slug}`)} class="bf-row">
+            <span class="side m">
+              <span class="num mono">{fmtCount(o.men)}</span>
+              <i style={`width:${(o.men / max) * 100}%`}></i>
+            </span>
+            <span class="label">{o.name}</span>
+            <span class="side f">
+              <i style={`width:${(o.women / max) * 100}%`}></i>
+              <span class="num mono">{fmtCount(o.women)}</span>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .bf { --label: 210px; font-family: var(--font-display); }
+  .bf-head, .bf-scale, .bf-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--label) minmax(0, 1fr); gap: 10px; align-items: center;
+  }
+  .bf-head { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+  .hm { color: var(--male); text-align: right; }
+  .hf { color: var(--female); }
+  .bf-scale { height: 16px; font-size: 10.5px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 4px; }
+  .bf-scale > span { position: relative; height: 100%; }
+  .bf-scale i { position: absolute; top: 0; font-style: normal; transform: translateX(50%); }
+  .bf-scale .sf i { transform: translateX(-50%); }
+  .bf-scale .sm i:first-child { transform: none; }
+  .bf-scale .sf i:first-child { transform: none; }
+  .bf-rows { list-style: none; margin: 0; padding: 0; }
+  .bf-row { text-decoration: none; padding: 2px 0; border-radius: 3px; }
+  .bf-row:hover { background: var(--panel); }
+  .side { display: flex; align-items: center; gap: 6px; height: 16px; }
+  .side.m { justify-content: flex-end; }
+  .side i { display: block; height: 12px; border-radius: 2px; min-width: 1px; }
+  .side.m i { background: var(--male); }
+  .side.f i { background: var(--female); }
+  .num { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+  .label { font-size: 13px; text-align: center; line-height: 1.15; overflow-wrap: anywhere; }
+  @media (max-width: 640px) {
+    .bf { --label: 108px; }
+    .label { font-size: 11.5px; }
+    .num { display: none; }
+  }
+</style>

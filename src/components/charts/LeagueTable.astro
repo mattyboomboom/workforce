@@ -1,0 +1,76 @@
+---
+/** Jobs ranked by how dominated they are by one sex, with real headcounts. */
+import { type Sex } from "../../lib/charts";
+import { occupations, fmtExact } from "../../lib/stats";
+import { url } from "../../lib/url";
+
+interface Props {
+  sex: Sex;
+  /** "most" = most dominated by this sex, "least" = where this sex is rarest */
+  order?: "most" | "least";
+  limit?: number;
+}
+const { sex, order = "most", limit = 15 } = Astro.props;
+const share = (o: (typeof occupations)[number]) => (sex === "men" ? o.malePct : o.femalePct);
+const rows = [...occupations]
+  .sort((a, b) => (order === "most" ? share(b) - share(a) : share(a) - share(b)))
+  .slice(0, limit);
+const label = sex === "men" ? "Men" : "Women";
+---
+
+<div class="scroll">
+  <table class="league">
+    <thead>
+      <tr>
+        <th class="r">#</th>
+        <th>Job</th>
+        <th class="r">{label}</th>
+        <th class="r">All workers</th>
+        <th class="mixcol">{label} as share of job</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((o, i) => (
+          <tr>
+            <td class="r mono muted">{i + 1}</td>
+            <td><a href={url(`roles/${o.slug}`)}>{o.name}</a></td>
+            <td class="r mono">{fmtExact(o[sex])}</td>
+            <td class="r mono muted">{fmtExact(o.total)}</td>
+            <td class="mixcol">
+              <span class="mini">
+                <span class="split" aria-hidden="true">
+                  <i class="m" style={`width:${o.malePct}%`} />
+                  <i class="f" style={`width:${o.femalePct}%`} />
+                </span>
+                <b class={`mono ${sex === "men" ? "pm" : "pf"}`}>{share(o).toFixed(1)}%</b>
+              </span>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .scroll { overflow-x: auto; }
+  .league { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 560px; }
+  th {
+    font-family: var(--font-display); font-size: 11.5px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--muted); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line);
+  }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:hover { background: var(--panel); }
+  .r { text-align: right; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13.5px; }
+  .muted { color: var(--muted); }
+  td a { text-decoration: none; font-family: var(--font-display); font-weight: 600; }
+  td a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .mixcol { width: 34%; }
+  .mini { display: grid; grid-template-columns: minmax(60px, 1fr) 56px; gap: 10px; align-items: center; }
+  .mini .split { height: 10px; }
+  .mini b { font-weight: 500; text-align: right; }
+  .pm { color: var(--male); }
+  .pf { color: var(--female); }
+</style>

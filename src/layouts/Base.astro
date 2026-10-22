@@ -31,7 +31,13 @@ const { title, description, lineup = "small" } = Astro.props;
     <header class="site-header">
       <div class="wrap bar">
         <a href={url()} class="brand">UK Jobs by Gender</a>
-        <nav><a href={url("#chart")}>Chart</a><a href={url("#sources")}>Sources</a></nav>
+        <nav aria-label="Main">
+          <a href={url("#chart")}>Chart</a>
+          <a href={url("everyone")}>Everyone</a>
+          <a href={url("men")}>Men</a>
+          <a href={url("women")}>Women</a>
+          <a href={url("#sources")}>Sources</a>
+        </nav>
       </div>
       <slot name="hero" />
       <div class={`lineup lineup-${lineup}`}>
@@ -139,7 +145,8 @@ const { title, description, lineup = "small" } = Astro.props;
     gap: 16px; padding-block: 14px;
   }
   .brand { font-weight: 700; text-decoration: none; letter-spacing: -0.01em; }
-  .site-header nav { display: flex; gap: 18px; font-size: 14px; }
+  .site-header nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 18px; font-size: 14px; }
+  @media (max-width: 560px) { .site-header nav { gap: 2px 12px; font-size: 13px; } .brand { font-size: 15px; } }
   .site-header nav a { color: var(--muted); text-decoration: none; }
   .site-header nav a:hover { color: var(--fg); }
   main.wrap { padding-block: 36px 56px; }
